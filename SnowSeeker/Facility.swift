@@ -15,7 +15,7 @@ struct Facility: Identifiable {
         "Accommodation": "house",
         "Beginners": "1.circle",
         "Cross-country": "map",
-        "Eco-friendly": "leaf.arrow.cirlclepath",
+        "Eco-friendly": "leaf.arrow.circlepath",
         "Family": "person.3"
     ]
     
