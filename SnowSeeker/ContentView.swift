@@ -19,14 +19,21 @@ import SwiftUI
 //}
 
 struct ContentView: View {
+    enum SortOrder {
+        case defaultOrder, alphabeticalOrder, countryOrder
+    }
+    
     let resorts: [Resort] = Bundle.main.decode("resorts.json")
     
     @StateObject var favorites = Favorites()
     @State private var searchText = ""
     
+    @State private var sortOrder: SortOrder = .defaultOrder
+    @State private var isShowingSortConfirmation = false
+    
     var body: some View {
         NavigationView {
-            List(filteredResorts) { resort in
+            List(sortedResorts) { resort in
                 NavigationLink {
                     ResortView(resort: resort)
                 } label: {
@@ -59,6 +66,21 @@ struct ContentView: View {
             }
             .navigationTitle("Resorts")
             .searchable(text: $searchText, prompt: "Search for a resort")
+            .confirmationDialog("Sort By",
+                                isPresented: $isShowingSortConfirmation) {
+                Button("Default") { sortOrder = .defaultOrder }
+                Button("Alphabetical (A-Z)") { sortOrder = .alphabeticalOrder }
+                Button("Country") { sortOrder = .countryOrder }
+            } message: {
+                Text("Sorting Order")
+            }
+            .toolbar {
+                Button {
+                    isShowingSortConfirmation = true
+                } label: {
+                    Label("Sort Resorts", systemImage: "arrow.up.arrow.down")
+                }
+            }
             
             WelcomeView()
         }
@@ -71,6 +93,22 @@ struct ContentView: View {
             return resorts
         } else {
             return resorts.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        }
+    }
+    
+    var sortedResorts: [Resort] {
+        switch sortOrder {
+        case .defaultOrder:
+            return filteredResorts
+        case .alphabeticalOrder:
+            return filteredResorts.sorted { $0.name < $1.name }
+        case .countryOrder:
+            // Sort by country & sort alphabetically within same country.
+            return filteredResorts.sorted {
+                $0.country == $1.country
+                ? $0.name < $1.name
+                : $0.country < $1.country
+            }
         }
     }
 }
